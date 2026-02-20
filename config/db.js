@@ -1,6 +1,6 @@
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 
-// 🔎 Debug what Railway is actually providing
+// Optional debug (you can remove later)
 console.log("---- ENVIRONMENT CHECK ----");
 console.log("MYSQLHOST:", process.env.MYSQLHOST);
 console.log("MYSQLUSER:", process.env.MYSQLUSER);
@@ -22,15 +22,16 @@ const db = mysql.createPool({
   },
 });
 
-// Test connection on startup
-db.getConnection((err, connection) => {
-  if (err) {
-    console.error("❌ Database connection failed:");
-    console.error(err);
-  } else {
+// Test connection
+(async () => {
+  try {
+    const connection = await db.getConnection();
     console.log("✅ Connected to Railway MySQL 🚀");
     connection.release();
+  } catch (err) {
+    console.error("❌ Database connection failed:");
+    console.error(err);
   }
-});
+})();
 
 module.exports = db;

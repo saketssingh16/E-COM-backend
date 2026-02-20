@@ -21,20 +21,22 @@ const options = {
       title: "E-Commerce API",
       version: "1.0.0",
       description: "API documentation for our e-commerce backend",
-      components: {
-  securitySchemes: {
-    bearerAuth: {
-      type: "http",
-      scheme: "bearer",
-      bearerFormat: "JWT",
     },
-  },
-},
-
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
     },
     servers: [
       {
-        url: "http://localhost:5000",
+        url:
+          process.env.NODE_ENV === "production"
+            ? "https://e-com-backend-production-4890.up.railway.app"
+            : "http://localhost:5000",
       },
     ],
   },
@@ -54,6 +56,14 @@ app.get("/", (req, res) => {
 });
 
 // =========================
+// Global Error Handler
+// =========================
+app.use((err, req, res, next) => {
+  console.error("UNHANDLED ERROR:", err);
+  res.status(500).json({ message: "Internal Server Error" });
+});
+
+// =========================
 // Start Server
 // =========================
 const PORT = process.env.PORT || 5000;
@@ -61,5 +71,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-
