@@ -44,17 +44,9 @@ const getDbConfig = () => {
 
 const dbConfig = getDbConfig();
 
-console.log("---- ENVIRONMENT CHECK ----");
-console.log("DB HOST:", dbConfig.host);
-console.log("DB USER:", dbConfig.user);
-console.log("DB NAME:", dbConfig.database || "(not set)");
-console.log("DB PORT:", dbConfig.port);
-console.log("----------------------------");
-
 const useSsl =
   process.env.MYSQL_SSL === "true" ||
-  process.env.NODE_ENV === "production" ||
-  Boolean(connectionUrl);
+  process.env.NODE_ENV === "production";
 
 const db = mysql.createPool({
   host: dbConfig.host,
@@ -92,7 +84,6 @@ const initDb = async () => {
     `);
 
     dbReady = true;
-    console.log("Connected to MySQL and verified users table");
   } catch (error) {
     dbReady = false;
     console.error("Database connection/setup failed:");
