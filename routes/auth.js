@@ -16,6 +16,12 @@ router.post("/register", async (req, res) => {
   }
 
   try {
+    if (!db.isReady || !db.isReady()) {
+      return res.status(503).json({
+        message: "Database is not ready. Please try again in a moment.",
+      });
+    }
+
     const [existingUsers] = await db.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -37,7 +43,7 @@ router.post("/register", async (req, res) => {
     });
   } catch (error) {
     console.error("REGISTER ERROR:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Registration failed due to server error" });
   }
 });
 
@@ -52,6 +58,12 @@ router.post("/login", async (req, res) => {
   }
 
   try {
+    if (!db.isReady || !db.isReady()) {
+      return res.status(503).json({
+        message: "Database is not ready. Please try again in a moment.",
+      });
+    }
+
     const [users] = await db.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -69,6 +81,12 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      return res
+        .status(500)
+        .json({ message: "Server auth configuration is missing JWT_SECRET" });
+    }
+
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET,
@@ -81,7 +99,7 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: "Login failed due to server error" });
   }
 });
 
