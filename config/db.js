@@ -22,6 +22,17 @@ const getDbConfig = () => {
     }
   }
 
+  // Some Railway setups expose MYSQL_URL as host-only (no mysql:// scheme).
+  if (connectionUrl && !connectionUrl.includes("://")) {
+    return {
+      host: connectionUrl,
+      user: process.env.MYSQLUSER || process.env.DB_USER || "root",
+      password: process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || "",
+      database: process.env.MYSQLDATABASE || process.env.DB_NAME || "",
+      port: Number(process.env.MYSQLPORT || process.env.DB_PORT || 3306),
+    };
+  }
+
   return {
     host: process.env.MYSQLHOST || process.env.DB_HOST || "localhost",
     user: process.env.MYSQLUSER || process.env.DB_USER || "root",
