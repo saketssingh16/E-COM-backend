@@ -22,7 +22,7 @@ const getDbConfig = () => {
     }
   }
 
-  // Some Railway setups expose MYSQL_URL as host-only (no mysql:// scheme).
+ 
   if (connectionUrl && !connectionUrl.includes("://")) {
     return {
       host: connectionUrl,
