@@ -68,19 +68,25 @@ const ensureAdminUser = async (connection) => {
   const adminName = process.env.ADMIN_NAME || "Platform Admin";
 
   const [existing] = await connection.query(
-    "SELECT id FROM users WHERE email = ? LIMIT 1",
+    "SELECT id, role FROM users WHERE email = ? LIMIT 1",
     [adminEmail],
   );
-
-  if (existing.length) return;
-
   const hashedPassword = await bcrypt.hash(adminPassword, 10);
-  await connection.query(
-    "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')",
-    [adminName, adminEmail, hashedPassword],
-  );
 
-  console.log(`Seeded admin user: ${adminEmail}`);
+  if (!existing.length) {
+    await connection.query(
+      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')",
+      [adminName, adminEmail, hashedPassword],
+    );
+    console.log(`Seeded admin user: ${adminEmail}`);
+    return;
+  }
+
+  await connection.query(
+    "UPDATE users SET name = ?, password = ?, role = 'admin' WHERE id = ?",
+    [adminName, hashedPassword, existing[0].id],
+  );
+  console.log(`Synced admin credentials for: ${adminEmail}`);
 };
 
 const ensureDefaultProducts = async (connection) => {
