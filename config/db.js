@@ -63,12 +63,14 @@ const db = mysql.createPool({
 let dbReady = false;
 
 const ensureAdminUser = async (connection) => {
-  const adminEmail = process.env.ADMIN_EMAIL || "admin@ecom.local";
+  const adminEmail = String(process.env.ADMIN_EMAIL || "admin@ecom.local")
+    .trim()
+    .toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
   const adminName = process.env.ADMIN_NAME || "Platform Admin";
 
   const [existing] = await connection.query(
-    "SELECT id, role FROM users WHERE email = ? LIMIT 1",
+    "SELECT id, role FROM users WHERE LOWER(email) = ? LIMIT 1",
     [adminEmail],
   );
   const hashedPassword = await bcrypt.hash(adminPassword, 10);

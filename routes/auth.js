@@ -6,6 +6,8 @@ const db = require("../config/db");
 const authMiddleware = require("../middleware/authMiddleware");
 const requireRole = require("../middleware/requireRole");
 
+const normalizeEmail = (value) => String(value || "").trim().toLowerCase();
+
 const ensureDbReady = (res) => {
   if (!db.isReady || !db.isReady()) {
     res.status(503).json({
@@ -24,7 +26,8 @@ const buildToken = (user) =>
   );
 
 router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, password } = req.body;
+  const email = normalizeEmail(req.body.email);
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
@@ -34,7 +37,7 @@ router.post("/register", async (req, res) => {
 
   try {
     const [existingUsers] = await db.query(
-      "SELECT id FROM users WHERE email = ?",
+      "SELECT id FROM users WHERE LOWER(email) = ?",
       [email],
     );
 
@@ -61,7 +64,8 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  const email = normalizeEmail(req.body.email);
 
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
@@ -77,7 +81,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const [users] = await db.query(
-      "SELECT id, name, email, password, role FROM users WHERE email = ?",
+      "SELECT id, name, email, password, role FROM users WHERE LOWER(email) = ?",
       [email],
     );
 
@@ -133,7 +137,8 @@ router.post(
   authMiddleware,
   requireRole("admin"),
   async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, password, role } = req.body;
+    const email = normalizeEmail(req.body.email);
     const safeRole = role === "admin" ? "admin" : "user";
 
     if (!name || !email || !password) {
@@ -142,7 +147,7 @@ router.post(
 
     try {
       const [existingUsers] = await db.query(
-        "SELECT id FROM users WHERE email = ?",
+        "SELECT id FROM users WHERE LOWER(email) = ?",
         [email],
       );
 
